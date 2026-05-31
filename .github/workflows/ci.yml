@@ -5,6 +5,7 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,7 +14,6 @@ jobs:
       fail-fast: false
       matrix:
         emacs_version:
-          - '24.3'
           - '30.1'
           - snapshot
     steps:
@@ -25,11 +25,36 @@ jobs:
       - name: Check out the source code
         uses: actions/checkout@v5
 
-      - name: Byte-compile the package
+      - name: Byte-compile the package (warnings are errors)
         run: |
           emacs -Q --batch \
-            --eval "(setq byte-compile-error-on-warn nil)" \
+            --eval "(setq byte-compile-error-on-warn t)" \
             -f batch-byte-compile imenu-list.el
+
+      - name: Load the package
+        run: |
+          emacs -Q --batch -L . --eval "(require 'imenu-list)"
+
+  # The declared minimum (Emacs 24.3) predates `with-suppressed-warnings'
+  # (Emacs 27.1).  The sources avoid it, but the 24.3 byte-compiler can be
+  # stricter or more lenient than current Emacs in ways that are out of scope
+  # for this package's warning cleanup, so the minimum is built without
+  # -Werror to confirm it still compiles and loads.  -Werror is enforced on
+  # 30.1 and snapshot above.
+  build-minimum:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: '24.3'
+
+      - name: Check out the source code
+        uses: actions/checkout@v5
+
+      - name: Byte-compile the package
+        run: |
+          emacs -Q --batch -f batch-byte-compile imenu-list.el
 
       - name: Load the package
         run: |
