@@ -701,7 +701,14 @@ The optional argument is ignored."
 
 (defvar imenu-list--timer nil)
 
-(defcustom imenu-list-idle-update-delay idle-update-delay
+(defcustom imenu-list-idle-update-delay
+  ;; `idle-update-delay' was renamed to `which-func-update-delay' and
+  ;; declared obsolete in Emacs 30.1.  Read whichever name is bound through
+  ;; `symbol-value' so the historical default (0.5) is preserved on every
+  ;; supported Emacs without triggering the obsolete-variable warning.
+  (symbol-value (if (boundp 'which-func-update-delay)
+                    'which-func-update-delay
+                  'idle-update-delay))
   "Idle time delay before automatically updating the imenu-list buffer."
   :group 'imenu-list
   :type 'number
