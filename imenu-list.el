@@ -436,7 +436,7 @@ Either a positive integer (number of rows/columns) or a percentage."
 
 (defcustom imenu-list-position 'right
   "Position of the imenu-list buffer.
-Either 'right, 'left, 'above or 'below.  This value is passed
+Either \\='right, \\='left, \\='above or \\='below.  This value is passed
 directly to `split-window'."
   :group 'imenu-list
   :type '(choice (const above)
