@@ -648,10 +648,32 @@ If `imenu-list-minor-mode' is already disabled, just call `quit-window'."
   ;; "\\b\\B" is a regexp that can't match anything
   (setq-local comment-start "\\b\\B")
   (setq-local comment-end "\\b\\B")
-  (setq hs-special-modes-alist
-        (cl-delete 'imenu-list-major-mode hs-special-modes-alist :key #'car))
-  (push `(imenu-list-major-mode "\\s-*\\+ " "\\s-*\\+ " ,comment-start imenu-list-forward-sexp nil)
-        hs-special-modes-alist))
+  (if (boundp 'hs-block-start-regexp)
+      ;; Emacs 31.1+ deprecated `hs-special-modes-alist' in favour of
+      ;; buffer-local variables.  `imenu-list-install-hideshow' runs in
+      ;; the Ilist buffer (from `imenu-list-major-mode'), so setting them
+      ;; locally is equivalent to the old alist entry, field for field:
+      ;; START/END -> `hs-block-start-regexp'/`hs-block-end-regexp',
+      ;; COMMENT-START -> `hs-c-start-regexp',
+      ;; FORWARD-SEXP-FUNC -> `hs-forward-sexp-function'.
+      (progn
+        (setq-local hs-block-start-regexp "\\s-*\\+ ")
+        (setq-local hs-block-end-regexp "\\s-*\\+ ")
+        (setq-local hs-c-start-regexp comment-start)
+        (setq-local hs-forward-sexp-function #'imenu-list-forward-sexp))
+    ;; Emacs < 31.1: register an entry in `hs-special-modes-alist'.  The
+    ;; variable is not obsolete on those versions; access it through
+    ;; `symbol-value'/`set' so byte-compiling this branch on Emacs 31.1+
+    ;; does not emit an obsolete-variable warning, and so no
+    ;; `with-suppressed-warnings' (Emacs 27.1+) is needed for Emacs 24.3.
+    (let* ((var (intern "hs-special-modes-alist"))
+           (alist (cl-delete 'imenu-list-major-mode (symbol-value var)
+                             :key #'car)))
+      (set var
+           (cons `(imenu-list-major-mode "\\s-*\\+ " "\\s-*\\+ "
+                                         ,comment-start
+                                         imenu-list-forward-sexp nil)
+                 alist)))))
 
 (defun imenu-list-forward-sexp (&optional _arg)
   "Move to next entry of same depth.
