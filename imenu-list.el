@@ -663,7 +663,7 @@ ARG is ignored."
     (forward-char))
   ;; (when (= (char-after) ?+)
   ;;   (forward-char 2))
-  (let ((spaces (- (point) (point-at-bol))))
+  (let ((spaces (- (point) (line-beginning-position))))
     (forward-line)
     ;; ignore-errors in case we're at the last line
     (ignore-errors (forward-char spaces))
