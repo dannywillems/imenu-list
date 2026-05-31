@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+          - '24.3'
+          - '30.1'
+          - snapshot
+    steps:
+      - name: Set up Emacs
+        uses: purcell/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs_version }}
+
+      - name: Check out the source code
+        uses: actions/checkout@v5
+
+      - name: Byte-compile the package
+        run: |
+          emacs -Q --batch \
+            --eval "(setq byte-compile-error-on-warn nil)" \
+            -f batch-byte-compile imenu-list.el
+
+      - name: Load the package
+        run: |
+          emacs -Q --batch -L . --eval "(require 'imenu-list)"
