@@ -1,4 +1,4 @@
-;;; imenu-list.el --- Show imenu entries in a separate buffer
+;;; imenu-list.el --- Show imenu entries in a separate buffer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2015-2021 Bar Magal & Contributors
 
@@ -541,7 +541,7 @@ imenu entries did not change since the last update."
                    (marker-buffer imenu-list--last-location)
                    (= location imenu-list--last-location))
         (setq imenu-list--last-location location)
-        (condition-case err
+        (condition-case nil
             (imenu-list-collect-entries)
           (imenu-unavailable (if imenu-list-persist-when-imenu-index-unavailable
                                  (throw 'index-failure nil)
@@ -653,11 +653,11 @@ If `imenu-list-minor-mode' is already disabled, just call `quit-window'."
   (push `(imenu-list-major-mode "\\s-*\\+ " "\\s-*\\+ " ,comment-start imenu-list-forward-sexp nil)
         hs-special-modes-alist))
 
-(defun imenu-list-forward-sexp (&optional arg)
+(defun imenu-list-forward-sexp (&optional _arg)
   "Move to next entry of same depth.
 This function is intended to be used by `hs-minor-mode'.  Don't use it
 for anything else.
-ARG is ignored."
+The optional argument is ignored."
   (beginning-of-line)
   (while (= (char-after) 32)
     (forward-char))
